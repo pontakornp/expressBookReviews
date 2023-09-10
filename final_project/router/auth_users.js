@@ -32,15 +32,16 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-  //Write your code here
   // check if user is authenicated
   const username = req.body.username;
   const password = req.body.password;
   if (username && password) {
     if (authenticatedUser(username, password)) {
-      let accessToken = jwt.sign({
-        data: password, "access", {expiresIn: 60 * 60}
-      });
+      let accessToken = jwt.sign(
+        {data: password}
+        , "access", 
+        {expiresIn: 60 * 60}
+      );
       req.session.authorization = {
         accessToken, username
       }
@@ -55,8 +56,31 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  // if user add new review, get posted with the username of the poster
+  // if same user add review to the same ISBN, it should modify the review
+  // if another user add review to the same ISBN, it should create a new review on the same ISBN
+  const isbn = req.params.isbn
+  const review = req.body.review;
+  const username = req.session.authorization.username
+  // check if isbn exist in the book db
+  if (isbn in books) {
+    let response;
+    if (Object.keys(books[isbn].reviews).length == 0) {
+      response = res.status(200).json({message: `ISBN ${isbn} review is added successfully for user ${username}`})
+    } else {
+      // if same user already review the same ISBN
+      if (username in books[isbn].reviews) {
+        response = res.status(204).json({message: `ISBN ${isbn} review is modified successfully for user ${username}`})
+      } else {
+        // if diff user review same ISBN
+        response = res.status(200).json({message: `ISBN ${isbn} review is added successfully for user ${username}`})
+      }
+    }
+    books[isbn].reviews[username] = {"review": review}
+    return response;
+  } else {
+    return res.status(404).json({message: `ISBN $(isbn) does not exist in the database`})
+  }
 });
 
 module.exports.authenticated = regd_users;
