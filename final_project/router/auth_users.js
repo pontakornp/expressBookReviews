@@ -79,7 +79,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     books[isbn].reviews[username] = {"review": review}
     return response;
   } else {
-    return res.status(404).json({message: `ISBN ${isbn} does not exist in the database`})
+    return res.status(404).json({message: `ISBN ${isbn} does not exist`})
   }
 });
 
@@ -96,7 +96,7 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
       return res.status(403).json({message: `ISBN ${isbn} review is cannot be deleted by user ${username}`})
     }
   } else {
-    return res.status(404).json({message: `ISBN $(isbn) does not exist in the database`})
+    return res.status(404).json({message: `ISBN ${isbn} does not exist`})
   }
 
 });
