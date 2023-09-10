@@ -33,7 +33,24 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 //only registered users can login
 regd_users.post("/login", (req,res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  // check if user is authenicated
+  const username = req.body.username;
+  const password = req.body.password;
+  if (username && password) {
+    if (authenticatedUser(username, password)) {
+      let accessToken = jwt.sign({
+        data: password, "access", {expiresIn: 60 * 60}
+      });
+      req.session.authorization = {
+        accessToken, username
+      }
+      return res.status(200).json({message: `User ${username} is successfully logged in`})
+    } else {
+      return res.status(200).json({message: "Invalid username or password. Please try again."})
+    }
+  } else {
+    return res.status(404).json({message: "Missing username or password"})
+  }
 });
 
 // Add a book review
