@@ -79,9 +79,28 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     books[isbn].reviews[username] = {"review": review}
     return response;
   } else {
-    return res.status(404).json({message: `ISBN $(isbn) does not exist in the database`})
+    return res.status(404).json({message: `ISBN ${isbn} does not exist in the database`})
   }
 });
+
+
+// Delete review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  const isbn = req.params.isbn;
+  const username = req.session.authorization.username
+  if (isbn in books) {
+    if (Object.keys(books[isbn].reviews).length > 0 && username in books[isbn].reviews) {
+      delete books[isbn].reviews[username];
+      return res.status(200).json({message: `ISBN ${isbn} review is deleted successfully for user ${username}`})
+    } else {
+      return res.status(403).json({message: `ISBN ${isbn} review is cannot be deleted by user ${username}`})
+    }
+  } else {
+    return res.status(404).json({message: `ISBN $(isbn) does not exist in the database`})
+  }
+
+});
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
